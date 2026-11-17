@@ -20,6 +20,13 @@
       "build": "ant",
       "jar": "dist/pitiupi.ping.jar",
       "menuCategory": "Social"
+    },
+    {
+      "id": "lig4",
+      "dir": "plugins/lig4",
+      "build": "ant",
+      "jar": "dist/pitiupi.lig4.jar",
+      "menuCategory": "Jogos"
     }
   ]
 }

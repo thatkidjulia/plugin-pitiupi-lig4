@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="pitiupi.lig4" default="jar" basedir=".">
+    <property name="src.dir" value="src"/>
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="core.jar" value="../../pitiupi/dist/pitiupi.jar"/>
+    <target name="jar" depends="compile">
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${dist.dir}/pitiupi.lig4.jar" basedir="${classes.dir}"/>
+    </target>
+    <target name="compile">
+        <ant dir="../../pitiupi" antfile="build.xml" target="jar"/>
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" source="17" target="17" encoding="UTF-8" includeantruntime="false">
+            <classpath><pathelement location="${core.jar}"/></classpath>
+        </javac>
+        <copy todir="${classes.dir}/META-INF"><fileset dir="${src.dir}/META-INF"/></copy>
+    </target>
+    <target name="clean"><delete dir="${build.dir}"/><delete dir="${dist.dir}"/></target>
+</project>
