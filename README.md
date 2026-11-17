@@ -1,169 +1,47 @@
-# pitiupi
+# Lig4 — Plugin para a plataforma Pitiupi
 
-Ferramenta **P2P** : núcleo em Java com arquitetura de **plugins** (conversa na rede e compartilhamento de tela).
+Plugin desenvolvido como parte de um trabalho da disciplina de **Redes de Computadores**. Ele implementa o jogo Lig4 para duas pessoas conectadas pela rede usando a plataforma Pitiupi.
 
-**Documentação:** [docs/README.md](docs/README.md) · **Quickstart:** [docs/comecar.md](docs/comecar.md)
+## Sobre a Pitiupi
 
----
+A Pitiupi é uma ferramenta P2P acadêmica para práticas de Redes de Computadores. Sua base foi desenvolvida por estudantes do laboratório Alice, no contexto do projeto da UFSJ. A plataforma permite que os participantes se encontrem na rede e oferece uma arquitetura de plugins para criar atividades em grupo.
 
-## Como rodar
+## Como jogar
 
-O comando compila o núcleo, os plugins do [catálogo](plugins.registry.json) e abre a janela. Plugins, cache e logs ficam em **`.pitiupi/`** dentro da pasta do projeto.
+1. Abra a Pitiupi nos dois computadores e entre na mesma sala, usando nomes diferentes.
+2. Na lista de usuários, clique com o botão direito no nome da outra pessoa e escolha **Desafiar para Lig4**.
+3. A pessoa convidada aceita ou recusa o convite.
+4. Quando aceito, quem convidou começa com as peças amarelas; quem aceitou joga com as azuis. Cada participante só pode jogar na própria vez.
+5. Ao terminar, o vencedor pode pedir uma revanche.
 
-Depois que a janela abrir: informe **nome** e **porta** (na sala, em geral `5000`). Os dois colegas usam a mesma porta. Abra os plugins na aba **Plugins**.
+O tabuleiro tem 7 colunas e 6 linhas. Vence quem alinhar quatro peças na horizontal, vertical ou diagonal. A partida termina em vitória ou empate.
 
-### Linux (Ubuntu instalado na máquina)
+## Conceitos de redes utilizados
 
-Abra o terminal, entre na pasta do projeto e rode:
+- **Comunicação P2P:** depois de encontrados na sala, os dois jogadores trocam dados diretamente, sem um servidor central para conduzir a partida.
+- **TCP unicast:** o convite, a resposta de aceitação ou recusa e cada jogada são enviados diretamente ao endereço do oponente. O TCP mantém a ordem dos dados e verifica a entrega na conexão.
+- **UDP multicast da plataforma:** a Pitiupi usa multicast para anunciar e descobrir participantes na rede. O jogo usa essa presença para permitir que uma pessoa escolha quem desafiar.
+- **Protocolo da aplicação:** as mensagens do plugin identificam o tipo de ação, a partida e, no caso de uma jogada, a coluna escolhida. Cada instância aplica a jogada recebida ao seu próprio tabuleiro.
 
-```bash
-sudo apt install openjdk-21-jdk ant python3
-chmod +x scripts/pitiupi.sh
-./scripts/pitiupi.sh run --all
-```
+## Compilar e executar no Windows
 
-A janela é a do Java do Linux. Cabo e Wi-Fi são as placas deste computador.
-
-### Windows
-
-Abra o **Prompt de Comando**: tecla Windows, digite `cmd` e pressione Enter. Entre na pasta em que o projeto foi baixado e rode:
+É necessário ter o JDK e o Apache Ant instalados e disponíveis no `PATH`. Abra o Prompt de Comando na pasta raiz do projeto e execute:
 
 ```bat
-cd %USERPROFILE%\Downloads\pitiupi
+ant -f plugins\lig4\build.xml jar
 scripts\pitiupi.cmd run --all
 ```
 
-Se a pasta for outra, troque o `cd`. No PowerShell o comando é o mesmo: `scripts\pitiupi.cmd run --all`.
+O primeiro comando compila o plugin. O segundo compila e inicia a Pitiupi com os plugins listados no catálogo do projeto.
 
-`java`, `javac` e `ant` precisam estar no PATH. No PowerShell, o JDK:
+## Estrutura do plugin
 
-```powershell
-winget install Microsoft.OpenJDK.17
-```
+- `src/pitiupi/lig4/game/Lig4Game.java`: regras e estado do tabuleiro.
+- `src/pitiupi/lig4/ui/Lig4Panel.java`: interface gráfica e interação da partida.
+- `src/pitiupi/lig4/net/Lig4Message.java`: estrutura das mensagens trocadas entre os jogadores.
+- `src/pitiupi/lig4/plugin/Lig4Plugin.java`: integração com a Pitiupi, convites e coordenação das mensagens.
+- `src/META-INF/services/pitiupi.models.Plugin`: registro SPI usado pelo Java para localizar o plugin.
 
-O Apache Ant é o zip de <https://ant.apache.org/bindownload.cgi>: extraia e acrescente a pasta `bin` ao PATH. Feche o cmd e abra de novo.
+## Contexto acadêmico
 
-A janela é a do Java do Windows. Cabo e Wi-Fi são as placas deste computador.
-
-### WSL
-
-Abra o **Ubuntu** do WSL (não o cmd). Entre na pasta do projeto e use o comando do Linux:
-
-```bash
-sudo apt install openjdk-21-jdk ant python3
-chmod +x scripts/pitiupi.sh
-./scripts/pitiupi.sh run --all
-```
-
-Se o projeto foi baixado no Windows, por exemplo em Downloads:
-
-```bash
-cd /mnt/c/Users/SEU_USUARIO/Downloads/pitiupi
-chmod +x scripts/pitiupi.sh
-./scripts/pitiupi.sh run --all
-```
-
-A compilação usa o `javac` e o `ant` do Ubuntu. A janela abre no Windows, com as placas reais. O JDK 17 do Windows também precisa estar instalado (`winget install Microsoft.OpenJDK.17` no PowerShell).
-
-```bash
-./scripts/pitiupi.sh list      # ids, categorias, JAR buildado?
-./scripts/pitiupi.sh check     # ferramentas + catálogo
-```
-
----
-
-## Catálogo de plugins (`plugins.registry.json`)
-
-Novos módulos entram no repositório adicionando uma entrada no JSON (não é preciso editar o script):
-
-| Campo | Significado |
-| --- | --- |
-| `id` | Usado em `--plugins chat,meuJogo` |
-| `dir` | Pasta do módulo (ex.: `plugins/xadrez`) |
-| `build` | `ant`, `make` ou `jar` (arquivo já pronto, sem compilar) |
-| `jar` | Caminho do JAR relativo a `dir` |
-| `menuCategory` | `Social`, `Jogos` ou `Streaming` — filtro CLI e documentação |
-
-Plugins de referência hoje:
-
-| id | Uso didático | Pasta |
-| --- | --- | --- |
-| `chat` | Sala geral, peer por IP, TCP privado | `plugins/chat` |
-| `screencast` | Multicast ou unicast de tela | `plugins/screencast` |
-
-Na interface, o texto das abas vem de `getDisplayName()` em cada plugin. O campo `menuCategory` no JSON alinha build/link com a documentação.
-
-```bash
-./scripts/pitiupi.sh run --all
-./scripts/pitiupi.sh run --category Social
-./scripts/pitiupi.sh run --plugins chat,screencast
-./scripts/pitiupi.sh discover   # pastas em plugins/ com SPI ainda não no catálogo
-```
-
----
-
-## Novo plugin (resumo)
-
-1. Copiar a estrutura de `plugins/chat` para `plugins/meuPlugin` ([plugins](docs/plugins.md), [funções do núcleo](docs/nucleo-para-plugins.md)).
-2. Em `createPlugin`, registrar o painel com `bindShellWorkspaceContent` e, se fizer sentido, peer actions na lista lateral.
-3. Adicionar entrada em [`plugins.registry.json`](plugins.registry.json), ou instalar o JAR pela aba **Configurações** (a instalação grava o catálogo).
-4. `./scripts/pitiupi.sh link --all` e reiniciar o app.
-
-O núcleo carrega **todos os `*.jar`** em `PITIUPI_HOME/plugins`. Detalhes: [pitiupi/plugins/README.md](pitiupi/plugins/README.md).
-
----
-
-## Pré-requisitos
-
-| Onde | O que instalar |
-| --- | --- |
-| Linux e Ubuntu do WSL | `sudo apt install openjdk-21-jdk ant python3` |
-| Windows (e o Windows ao lado do WSL) | JDK 17 (`winget install Microsoft.OpenJDK.17`) e Apache Ant no PATH |
-
-Conferir no Linux ou no WSL: `./scripts/pitiupi.sh check`. Testes do núcleo: `cd pitiupi && ant test`.
-
-### Linux sem sudo
-
-```
-wget https://dlcdn.apache.org/ant/binaries/apache-ant-1.10.18-bin.tar.gz
-wget https://dlcdn.apache.org/ant/binaries/apache-ant-1.10.18-bin.tar.gz
-
-
-tar -xzf apache-ant-1.10.15-bin.tar.gz
-mv apache-ant-1.10.15 "$HOME/ant"
-
-
-echo 'export ANT_HOME="$HOME/ant"' >> ~/.bashrc
-echo 'export PATH="$ANT_HOME/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-
-
-ant -version
-```
----
-
-## Comandos do script
-
-| Comando | Ação |
-| --- | --- |
-| `run` | Build + link + app |
-| `build` | Build + link |
-| `link` | Só symlinks (JARs já existem) |
-| `list` | Catálogo e status do JAR |
-| `discover` | Sugestão de módulos com SPI |
-| `check` | PATH + JSON válido |
-
-Opções: `--all` (padrão), `--plugins ids`, `--category Social|Jogos|Streaming`.
-
----
-
-## Teste em rede
-
-- **Mesmo PC:** duas instâncias, portas distintas (ex. 5000 e 5001).
-- **Dois PCs na mesma Wi‑Fi:** mesma porta (ex. 5000), nomes diferentes. Cada um segue o caso da própria máquina em [Como rodar](#como-rodar). Linux abre o Java do Linux; Windows e WSL abrem o Java do Windows.
-
-Ver [docs/usar.md](docs/usar.md) e [docs/rede.md](docs/rede.md).
-
----
-
-
+Este plugin demonstra conceitos de comunicação entre aplicações em rede e integração modular com uma plataforma P2P. Foi pensado como material de aprendizagem para um trabalho de Redes de Computadores.
